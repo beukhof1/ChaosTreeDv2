@@ -1,5 +1,3 @@
-
-
 import React, { useState, useCallback, useEffect } from 'react';
 import Scene from './components/Scene';
 import UI from './components/UI';
@@ -45,7 +43,7 @@ export const DEFAULT_SETTINGS: SceneSettings = {
   logoUrl: null,
 
   // Cozy Extras
-  showTreeSkirt: false,
+  showTreeSkirt: true, // Enabled by default
   
   showSnowOnBranches: false,
   showBokeh: false,
@@ -121,6 +119,8 @@ const App: React.FC = () => {
                 canvas.height = TARGET_SIZE;
                 const ctx = canvas.getContext('2d');
                 
+                let dominantColor = '#b0b0b0';
+
                 if (ctx) {
                     // Calculate "Cover" fit to ensure square center crop
                     const ratio = Math.max(TARGET_SIZE / img.width, TARGET_SIZE / img.height);
@@ -131,23 +131,45 @@ const App: React.FC = () => {
 
                     ctx.drawImage(img, offsetX, offsetY, w, h);
                     
+                    // Extract dominant average color for ornament blending
+                    try {
+                        // Sample center area for better accuracy
+                        const sampleSize = 50;
+                        const p = ctx.getImageData((TARGET_SIZE-sampleSize)/2, (TARGET_SIZE-sampleSize)/2, sampleSize, sampleSize).data;
+                        let r = 0, g = 0, b = 0, count = 0;
+                        for (let i = 0; i < p.length; i += 4) {
+                            r += p[i];
+                            g += p[i + 1];
+                            b += p[i + 2];
+                            count++;
+                        }
+                        r = Math.floor(r / count);
+                        g = Math.floor(g / count);
+                        b = Math.floor(b / count);
+                        dominantColor = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+                    } catch (e) {
+                        console.warn('Error extracting color', e);
+                    }
+
                     // 0.85 quality saves memory bandwidth
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     resolve({
                         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-                        url: dataUrl
+                        url: dataUrl,
+                        dominantColor
                     });
                 } else {
                     resolve({
                          id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-                         url: url 
+                         url: url,
+                         dominantColor: '#b0b0b0'
                     });
                 }
                 URL.revokeObjectURL(url);
             };
             img.onerror = () => {
                 URL.revokeObjectURL(url);
-                resolve({ id: 'error', url: '' }); 
+                resolve({ id: 'error', url: '', dominantColor: '#505050' }); 
             };
             img.src = url;
         });

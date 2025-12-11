@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, RotateCw, Pause, Maximize, Minimize, Settings2, X, Sun, CloudFog, Camera, Sparkles, Moon, Play, Zap, Gift, Mountain, Trees, Clock, Globe, Scaling, Wind, Waves, Target, Scan, Snowflake, Crown, Box, Wand2, MessageSquare, Type, Projector, Cloud } from 'lucide-react';
 import { RenderStyle, SceneSettings, UploadedImage } from '../types';
@@ -22,8 +20,9 @@ interface PanelProps {
   className?: string;
 }
 
+// Shiny Glass Panel Style
 const Panel = ({ children, className = "" }: PanelProps) => (
-    <div className={`bg-black/80 backdrop-blur-md border border-white/10 shadow-2xl ${className}`}>
+    <div className={`bg-gradient-to-b from-white/15 to-black/60 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] ${className}`}>
         {children}
     </div>
 );
@@ -35,10 +34,10 @@ interface SectionProps {
 }
 
 const Section = ({ title, icon: Icon, children }: SectionProps) => (
-    <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3 text-white/50 px-1">
-            <Icon size={12} />
-            <span className="text-[10px] uppercase tracking-widest font-bold">{title}</span>
+    <div className="mb-5 bg-white/5 rounded-xl p-3 border border-white/5">
+        <div className="flex items-center gap-2 mb-3 text-blue-200/80 px-1">
+            <Icon size={14} />
+            <span className="text-[10px] uppercase tracking-widest font-bold shadow-black drop-shadow-sm">{title}</span>
         </div>
         <div className="space-y-2">
             {children}
@@ -47,37 +46,37 @@ const Section = ({ title, icon: Icon, children }: SectionProps) => (
 );
 
 const Slider = ({ label, value, min, max, step, onChange }: any) => (
-    <div className="flex items-center justify-between gap-3 bg-white/5 rounded-lg px-3 py-2 border border-white/5">
-        <span className="text-xs font-medium text-white/70 w-24 truncate">{label}</span>
-        <div className="flex-1 relative h-6 flex items-center">
+    <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] font-medium text-white/70 w-20 truncate">{label}</span>
+        <div className="flex-1 relative h-5 flex items-center group">
             <input 
                 type="range" min={min} max={max} step={step}
                 value={value}
                 onChange={(e) => onChange(parseFloat(e.target.value))}
-                className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform group-hover:[&::-webkit-slider-thumb]:scale-125"
             />
         </div>
-        <span className="text-[10px] font-mono text-white/50 w-8 text-right">{Math.round(value * 10) / 10}</span>
+        <span className="text-[9px] font-mono text-white/40 w-6 text-right">{Math.round(value * 10) / 10}</span>
     </div>
 );
 
 const Toggle = ({ label, value, onChange }: any) => (
     <button 
         onClick={() => onChange(!value)}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${value ? 'bg-blue-500/20 border-blue-500/50' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${value ? 'bg-blue-500/20 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
     >
-        <span className={`text-xs font-medium ${value ? 'text-blue-200' : 'text-white/70'}`}>{label}</span>
-        <div className={`w-8 h-4 rounded-full relative transition-colors ${value ? 'bg-blue-500' : 'bg-white/20'}`}>
-            <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${value ? 'translate-x-4' : 'translate-x-0'}`} />
+        <span className={`text-[11px] font-medium ${value ? 'text-blue-200' : 'text-white/60'}`}>{label}</span>
+        <div className={`w-7 h-3.5 rounded-full relative transition-colors ${value ? 'bg-blue-500' : 'bg-white/10'}`}>
+            <div className={`absolute top-0.5 left-0.5 w-2.5 h-2.5 bg-white rounded-full transition-transform shadow-sm ${value ? 'translate-x-3.5' : 'translate-x-0'}`} />
         </div>
     </button>
 );
 
 const ColorPicker = ({ label, value, onChange }: any) => (
-    <div className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-        <span className="text-xs font-medium text-white/70">{label}</span>
-        <div className="relative">
-            <div className="w-6 h-6 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: value }} />
+    <div className="flex items-center justify-between bg-black/20 p-1.5 rounded-lg border border-white/5">
+        <span className="text-[11px] font-medium text-white/60 ml-2">{label}</span>
+        <div className="relative group cursor-pointer">
+            <div className="w-5 h-5 rounded-md border border-white/30 shadow-sm transition-transform group-hover:scale-110" style={{ backgroundColor: value }} />
             <input 
                 type="color" 
                 value={value} 
@@ -89,15 +88,15 @@ const ColorPicker = ({ label, value, onChange }: any) => (
 );
 
 const OptionGrid = ({ options, value, onChange, labelKey = 'label' }: any) => (
-    <div className="grid grid-cols-3 gap-1.5">
+    <div className="grid grid-cols-3 gap-1">
         {options.map((opt: any) => (
             <button
                 key={opt.id}
                 onClick={() => onChange(opt.id)}
-                className={`py-2 px-1 rounded-md text-[10px] font-semibold transition-all border ${
+                className={`py-1.5 px-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-all border ${
                     value === opt.id 
-                    ? 'bg-white text-black border-white' 
-                    : 'bg-white/5 text-white/60 border-transparent hover:bg-white/10 hover:text-white'
+                    ? 'bg-white text-black border-white shadow-lg' 
+                    : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10 hover:text-white'
                 }`}
             >
                 {opt[labelKey]}
@@ -112,7 +111,7 @@ const TextInput = ({ value, onChange, placeholder }: any) => (
         value={value} 
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50"
+        className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-blue-500/50 transition-colors"
     />
 );
 
@@ -156,9 +155,9 @@ const CinemaSubtitles: React.FC = () => {
     }, []);
 
     return (
-        <div className="absolute bottom-0 left-0 w-full h-32 pointer-events-none z-30 flex items-end justify-center pb-12">
-            <div className={`transition-all duration-1000 ease-in-out px-8 text-center max-w-2xl ${fade ? 'opacity-70 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-                <p className="font-serif italic text-lg md:text-xl text-amber-100 tracking-wider leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        <div className="absolute bottom-0 left-0 w-full h-48 pointer-events-none z-30 flex items-end justify-center pb-24">
+            <div className={`transition-all duration-1000 ease-in-out px-8 text-center max-w-3xl ${fade ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <p className="font-christmas text-2xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-100 tracking-wide leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] filter">
                     "{QUOTES[index]}"
                 </p>
             </div>
@@ -183,16 +182,17 @@ const TypewriterCard: React.FC<{ message: string }> = ({ message }) => {
     }, [fullText]);
 
     return (
-        <div className="absolute top-24 left-6 z-30 pointer-events-none w-64 opacity-90 scale-90 origin-top-left">
-            <div className="bg-white/90 backdrop-blur-sm text-stone-800 p-6 rounded-sm shadow-xl border border-white/20 relative overflow-hidden">
+        <div className="absolute top-32 left-8 z-30 pointer-events-none w-72 opacity-95">
+            <div className="bg-white/5 backdrop-blur-xl text-white p-5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/20 relative overflow-hidden transition-all hover:scale-105 duration-500">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-70"></div>
                 <div className="relative z-10">
-                     <div className="flex justify-between items-center mb-4 border-b border-stone-300/50 pb-2">
-                         <span className="text-[9px] text-stone-500 uppercase tracking-widest font-bold">Holiday Post</span>
-                         <div className="w-2 h-2 rounded-full bg-red-500" />
+                     <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                         <span className="text-[10px] text-blue-200 uppercase tracking-[0.2em] font-bold">Holiday Wish</span>
+                         <div className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)] animate-pulse" />
                      </div>
-                     <p className="font-mono text-xs leading-relaxed text-stone-700 font-medium">
+                     <p className="font-sans text-sm leading-relaxed text-white/90 font-light tracking-wide">
                         {text}
-                        <span className="animate-pulse inline-block w-1.5 h-3 bg-red-400 ml-0.5 align-middle opacity-50"></span>
+                        <span className="animate-pulse inline-block w-0.5 h-4 bg-blue-300 ml-0.5 align-middle opacity-70"></span>
                      </p>
                 </div>
             </div>
@@ -222,237 +222,273 @@ const UI: React.FC<UIProps> = ({
   return (
     <div className="w-full h-full relative pointer-events-none select-none font-sans text-slate-200">
       
+      {/* Hide Branding when in Fullscreen */}
       {!isFullscreen && (
-          <div className="absolute top-6 left-6 z-40 pointer-events-none flex flex-col items-start drop-shadow-lg opacity-75">
-               <h1 className="text-[10px] md:text-xs text-white leading-none -rotate-2" style={{ fontFamily: "'Rock Salt', cursive" }}>
-                   Cpt. Chaos
-               </h1>
-               <p className="text-[9px] text-blue-100 uppercase tracking-[0.25em] font-light ml-1 mt-1 text-shadow-sm opacity-80">Tree-D Christmas</p>
-          </div>
+        <div className="absolute top-6 left-6 z-40 pointer-events-none flex flex-col items-start drop-shadow-lg opacity-90">
+            <h1 className="text-xl md:text-[10px] text-white leading-none -rotate-2" style={{ fontFamily: "'Rock Salt', cursive" }}>
+                Cpt. Chaos
+            </h1>
+            <p className="text-[9px] text-blue-200 uppercase tracking-[0.25em] font-light ml-1 mt-1 text-shadow-sm opacity-80">Tree-D Christmas</p>
+        </div>
       )}
 
+      {/* Greetings - Always visible if enabled, even in fullscreen */}
       {settings.showCinemaSubtitles && <CinemaSubtitles />}
       {settings.showTypewriterCard && <TypewriterCard message={settings.typewriterMessage} />}
 
-      {/* SETTINGS DRAWER */}
-      <div className={`absolute top-0 right-0 h-full w-[320px] max-w-full pointer-events-auto transform transition-transform duration-300 z-50 flex flex-col ${showSettings ? 'translate-x-0' : 'translate-x-full'}`}>
-          <Panel className="h-full flex flex-col border-l border-white/10 rounded-l-2xl overflow-hidden">
-              {/* Header */}
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/40">
-                  <span className="font-bold text-sm tracking-wide">Settings</span>
-                  <div className="flex gap-2">
-                      <button onClick={onResetSettings} className="p-2 hover:bg-white/10 rounded-full transition-colors" title="Reset"><RotateCw size={14} /></button>
-                      <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X size={16} /></button>
-                  </div>
-              </div>
+      {/* UI Controls - Auto Hide in Fullscreen */}
+      {!isFullscreen && (
+        <>
+            {/* BOTTOM FLOATING BAR - COMPACT */}
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+                <Panel className="flex items-center gap-3 px-5 py-1.5 rounded-full">
+                    <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="group relative flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white p-2.5 rounded-full transition-all shadow-lg hover:shadow-blue-500/25 hover:scale-105 active:scale-95"
+                        title="Add Memory"
+                    >
+                        <Upload size={18} />
+                    </button>
+                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => onUpload(e.target.files)} accept="image/*" onClick={(e) => (e.currentTarget.value = '')} />
 
-              {/* Tabs */}
-              <div className="flex p-2 gap-1 border-b border-white/10 bg-black/20">
-                  {[
-                      { id: 'env', label: 'World', icon: Globe },
-                      { id: 'decor', label: 'Decor', icon: Gift },
-                      { id: 'camera', label: 'Camera', icon: Camera }
-                  ].map(tab => (
-                      <button 
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all ${activeTab === tab.id ? 'bg-white/10 text-white' : 'text-white/40 hover:bg-white/5'}`}
-                      >
-                          <tab.icon size={12} /> {tab.label}
-                      </button>
-                  ))}
-              </div>
+                    <div className="w-px h-6 bg-white/20" />
 
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6 pb-24">
-                  {activeTab === 'env' && (
-                      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                          <Section title="Quality" icon={Settings2}>
-                              <OptionGrid 
-                                  value={settings.quality} 
-                                  onChange={(v: any) => update('quality', v)}
-                                  options={[
-                                      { id: 'high', label: 'High' },
-                                      { id: 'balanced', label: 'Medium' },
-                                      { id: 'fast', label: 'Low' }
-                                  ]} 
-                              />
-                          </Section>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={onToggleAutoRotate}
+                            disabled={images.length === 0}
+                            className={`p-2.5 rounded-full transition-all ${
+                                images.length === 0 
+                                ? 'text-white/20 cursor-not-allowed' 
+                                : isAutoRotate 
+                                    ? 'bg-white/10 text-green-400 shadow-inner' 
+                                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                            }`}
+                            title={isAutoRotate ? "Pause Tour" : "Resume Tour"}
+                        >
+                            {isAutoRotate ? <Pause size={18} /> : <Play size={18} />}
+                        </button>
 
-                          <Section title="Background" icon={Mountain}>
-                              <OptionGrid 
-                                  value={settings.bgType} 
-                                  onChange={(v: any) => update('bgType', v)}
-                                  options={[
-                                      { id: 'mountains', label: 'Alps' },
-                                      { id: 'forest', label: 'Forest' },
-                                      { id: 'aurora', label: 'Aurora' },
-                                      { id: 'stars', label: 'Night' },
-                                  ]} 
-                              />
-                          </Section>
+                        <button 
+                            onClick={() => setShowSettings(!showSettings)}
+                            className={`p-2.5 rounded-full transition-all ${
+                                showSettings 
+                                ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
+                                : 'text-white/80 hover:bg-white/10 hover:text-white'
+                            }`}
+                            title="Settings"
+                        >
+                            <Settings2 size={18} />
+                        </button>
 
-                          <Section title="Time" icon={Clock}>
-                              <div className="flex gap-1 mb-2 bg-white/5 p-1 rounded-lg">
-                                  {['MANUAL', 'CYCLE', 'DAY LOOP'].map(mode => {
-                                      let active = (mode === 'MANUAL' && !settings.isTimeAuto) ||
-                                                   (mode === 'CYCLE' && settings.isTimeAuto && settings.timeLoopMode === 'cycle') ||
-                                                   (mode === 'DAY LOOP' && settings.isTimeAuto && settings.timeLoopMode === 'pingpong');
-                                      return (
-                                          <button 
-                                            key={mode}
-                                            onClick={() => {
-                                                if(mode === 'MANUAL') update('isTimeAuto', false);
-                                                else {
-                                                    update('isTimeAuto', true);
-                                                    update('timeLoopMode', mode === 'CYCLE' ? 'cycle' : 'pingpong');
-                                                }
-                                            }}
-                                            className={`flex-1 py-1.5 rounded-md text-[9px] font-bold ${active ? 'bg-white text-black' : 'text-white/40'}`}
-                                          >
-                                              {mode}
-                                          </button>
-                                      )
-                                  })}
-                              </div>
-                              <Slider label="Hour" value={settings.timeOfDay} min={0} max={24} step={0.1} onChange={(v: number) => update('timeOfDay', v)} />
-                              <ColorPicker label="Sky Tint" value={settings.skyColor} onChange={(v: string) => update('skyColor', v)} />
-                          </Section>
+                        <button 
+                            onClick={toggleFullscreen}
+                            className="p-2.5 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                            title="Fullscreen"
+                        >
+                            <Maximize size={18} />
+                        </button>
+                    </div>
+                </Panel>
+            </div>
 
-                          <Section title="Lighting" icon={Zap}>
-                              <Toggle label="Ice Floor" value={settings.showGroundReflections} onChange={(v: boolean) => update('showGroundReflections', v)} />
-                              {settings.showGroundReflections && (
-                                  <>
-                                      <Slider label="Roughness" value={settings.groundRoughness} min={0} max={1} step={0.05} onChange={(v: number) => update('groundRoughness', v)} />
-                                      <Slider label="Reflectivity" value={settings.groundReflection} min={0} max={1} step={0.05} onChange={(v: number) => update('groundReflection', v)} />
-                                  </>
-                              )}
-                              <Toggle label="Cloud Shadows (Gobo)" value={settings.showGoboLighting} onChange={(v: boolean) => update('showGoboLighting', v)} />
-                              <Slider label="Sunlight" value={settings.shadowIntensity} min={0} max={5} step={0.1} onChange={(v: number) => update('shadowIntensity', v)} />
-                              <Slider label="Ambient" value={settings.sceneLight} min={0} max={3} step={0.1} onChange={(v: number) => update('sceneLight', v)} />
-                          </Section>
-                      </div>
-                  )}
+            {/* SETTINGS DRAWER */}
+            <div className={`absolute top-0 right-0 h-full w-[300px] max-w-full pointer-events-auto transform transition-transform duration-300 z-50 flex flex-col ${showSettings ? 'translate-x-0' : 'translate-x-full'}`}>
+                <Panel className="h-full flex flex-col border-l border-white/20 rounded-l-2xl overflow-hidden shadow-[-10px_0_40px_rgba(0,0,0,0.5)]">
+                    {/* Header */}
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/20">
+                        <span className="font-bold text-xs tracking-widest uppercase text-white/90">Settings</span>
+                        <div className="flex gap-2">
+                            <button onClick={onResetSettings} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white" title="Reset"><RotateCw size={14} /></button>
+                            <button onClick={() => setShowSettings(false)} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"><X size={16} /></button>
+                        </div>
+                    </div>
 
-                  {activeTab === 'decor' && (
-                      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                          <Section title="Tree Topper" icon={Crown}>
-                              <div className="flex gap-2 items-center mb-2">
-                                  <input ref={logoInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => onLogoUpload(e.target.files)} />
-                                  <OptionGrid 
-                                      value={settings.topperType} 
-                                      onChange={(v: any) => update('topperType', v)}
-                                      options={[{ id: 'star', label: 'Star' }, { id: 'logo_spin', label: '3D Logo' }, { id: 'logo_holo', label: 'Holo' }]} 
-                                  />
-                              </div>
-                              {(settings.topperType === 'logo_spin' || settings.topperType === 'logo_holo') && (
-                                  <button onClick={() => logoInputRef.current?.click()} className="w-full py-2 bg-blue-500/20 text-blue-300 border border-blue-500/50 rounded-lg text-xs font-bold hover:bg-blue-500/30">
-                                      Upload Logo
-                                  </button>
-                              )}
-                          </Section>
+                    {/* Tabs */}
+                    <div className="flex p-1.5 gap-1 border-b border-white/5 bg-black/10">
+                        {[
+                            { id: 'env', label: 'World', icon: Globe },
+                            { id: 'decor', label: 'Decor', icon: Gift },
+                            { id: 'camera', label: 'Camera', icon: Camera }
+                        ].map(tab => (
+                            <button 
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${activeTab === tab.id ? 'bg-white/10 text-white shadow-inner' : 'text-white/40 hover:bg-white/5'}`}
+                            >
+                                <tab.icon size={12} /> {tab.label}
+                            </button>
+                        ))}
+                    </div>
 
-                          <Section title="Ornaments" icon={Gift}>
-                             <button onClick={() => fileInputRef.current?.click()} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-bold text-sm shadow-lg shadow-blue-900/50 transition-all mb-4">
-                                Add Photos
-                             </button>
-                             <ColorPicker label="Tree Color" value={settings.treeColor} onChange={(v: string) => update('treeColor', v)} />
-                          </Section>
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-4 pb-32">
+                        {activeTab === 'env' && (
+                            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                <Section title="Quality" icon={Settings2}>
+                                    <OptionGrid 
+                                        value={settings.quality} 
+                                        onChange={(v: any) => update('quality', v)}
+                                        options={[
+                                            { id: 'high', label: 'High' },
+                                            { id: 'balanced', label: 'Med' },
+                                            { id: 'fast', label: 'Low' }
+                                        ]} 
+                                    />
+                                </Section>
 
-                          <Section title="Details" icon={Box}>
-                              <div className="grid grid-cols-2 gap-2 mb-2">
-                                  <Toggle label="Tree Skirt" value={settings.showTreeSkirt} onChange={(v: boolean) => update('showTreeSkirt', v)} />
-                                  <Toggle label="Snowy Tree" value={settings.showSnowOnBranches} onChange={(v: boolean) => update('showSnowOnBranches', v)} />
-                              </div>
-                          </Section>
+                                <Section title="Background" icon={Mountain}>
+                                    <OptionGrid 
+                                        value={settings.bgType} 
+                                        onChange={(v: any) => update('bgType', v)}
+                                        options={[
+                                            { id: 'mountains', label: 'Alps' },
+                                            { id: 'forest', label: 'Woods' },
+                                            { id: 'aurora', label: 'Aurora' },
+                                            { id: 'stars', label: 'Void' },
+                                        ]} 
+                                    />
+                                </Section>
 
-                          <Section title="Greetings" icon={MessageSquare}>
-                              <div className="space-y-3">
-                                  <div className="space-y-1">
-                                      <Toggle label="Cinema Subtitles" value={settings.showCinemaSubtitles} onChange={(v: boolean) => update('showCinemaSubtitles', v)} />
-                                  </div>
+                                <Section title="Time Cycle" icon={Clock}>
+                                    <div className="flex gap-1 mb-3 bg-black/20 p-1 rounded-lg">
+                                        {['MANUAL', 'CYCLE', 'DAY LOOP'].map(mode => {
+                                            let active = (mode === 'MANUAL' && !settings.isTimeAuto) ||
+                                                        (mode === 'CYCLE' && settings.isTimeAuto && settings.timeLoopMode === 'cycle') ||
+                                                        (mode === 'DAY LOOP' && settings.isTimeAuto && settings.timeLoopMode === 'pingpong');
+                                            return (
+                                                <button 
+                                                    key={mode}
+                                                    onClick={() => {
+                                                        if(mode === 'MANUAL') update('isTimeAuto', false);
+                                                        else {
+                                                            update('isTimeAuto', true);
+                                                            update('timeLoopMode', mode === 'CYCLE' ? 'cycle' : 'pingpong');
+                                                        }
+                                                    }}
+                                                    className={`flex-1 py-1 rounded-md text-[9px] font-bold transition-all ${active ? 'bg-white text-black shadow-sm' : 'text-white/40 hover:text-white'}`}
+                                                >
+                                                    {mode}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                    <Slider label="Hour" value={settings.timeOfDay} min={0} max={24} step={0.1} onChange={(v: number) => update('timeOfDay', v)} />
+                                    <div className="h-2"></div>
+                                    <ColorPicker label="Sky Tint" value={settings.skyColor} onChange={(v: string) => update('skyColor', v)} />
+                                </Section>
 
-                                  <div className="space-y-1">
-                                      <Toggle label="Typewriter Card" value={settings.showTypewriterCard} onChange={(v: boolean) => update('showTypewriterCard', v)} />
-                                      {settings.showTypewriterCard && (
-                                          <TextInput value={settings.typewriterMessage} onChange={(v: string) => update('typewriterMessage', v)} placeholder="Card Message..." />
-                                      )}
-                                  </div>
-                              </div>
-                          </Section>
+                                <Section title="Lighting" icon={Zap}>
+                                    <Toggle label="Ice Floor" value={settings.showGroundReflections} onChange={(v: boolean) => update('showGroundReflections', v)} />
+                                    {settings.showGroundReflections && (
+                                        <div className="pl-2 border-l border-white/10 ml-2 space-y-2 mt-2">
+                                            <Slider label="Roughness" value={settings.groundRoughness} min={0} max={1} step={0.05} onChange={(v: number) => update('groundRoughness', v)} />
+                                            <Slider label="Reflectivity" value={settings.groundReflection} min={0} max={1} step={0.05} onChange={(v: number) => update('groundReflection', v)} />
+                                        </div>
+                                    )}
+                                    <div className="h-2"></div>
+                                    <Toggle label="Cloud Shadows" value={settings.showGoboLighting} onChange={(v: boolean) => update('showGoboLighting', v)} />
+                                    <div className="h-2"></div>
+                                    <Slider label="Sunlight" value={settings.shadowIntensity} min={0} max={5} step={0.1} onChange={(v: number) => update('shadowIntensity', v)} />
+                                    <Slider label="Ambient" value={settings.sceneLight} min={0} max={3} step={0.1} onChange={(v: number) => update('sceneLight', v)} />
+                                </Section>
+                            </div>
+                        )}
 
-                          <Section title="Magic" icon={Wand2}>
-                              <Slider label="Tree Lights" value={settings.flicker} min={0} max={100} step={1} onChange={(v: number) => update('flicker', v)} />
-                              <Slider label="Sparkles" value={settings.sparkles} min={0} max={100} step={1} onChange={(v: number) => update('sparkles', v)} />
-                          </Section>
-                      </div>
-                  )}
+                        {activeTab === 'decor' && (
+                            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                <Section title="Tree Topper" icon={Crown}>
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        <input ref={logoInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => onLogoUpload(e.target.files)} />
+                                        <OptionGrid 
+                                            value={settings.topperType} 
+                                            onChange={(v: any) => update('topperType', v)}
+                                            options={[{ id: 'star', label: 'Star' }, { id: 'logo_spin', label: '3D Logo' }, { id: 'logo_holo', label: 'Holo' }]} 
+                                        />
+                                        {(settings.topperType === 'logo_spin' || settings.topperType === 'logo_holo') && (
+                                            <button onClick={() => logoInputRef.current?.click()} className="mt-2 w-full py-2 bg-white/5 hover:bg-white/10 text-blue-200 border border-white/10 rounded-lg text-[10px] font-bold transition-all">
+                                                UPLOAD LOGO
+                                            </button>
+                                        )}
+                                    </div>
+                                </Section>
 
-                  {activeTab === 'camera' && (
-                      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                          <Section title="Weather" icon={CloudFog}>
-                              <div className="grid grid-cols-2 gap-2 mb-2">
-                                  <Toggle label="Rolling Fog" value={settings.showGroundFog} onChange={(v: boolean) => update('showGroundFog', v)} />
-                                  <Toggle label="Diamond Dust" value={settings.showDiamondDust} onChange={(v: boolean) => update('showDiamondDust', v)} />
-                              </div>
-                              <Slider label="Snow Amount" value={settings.snow} min={0} max={100} step={1} onChange={(v: number) => update('snow', v)} />
-                              <Slider label="Speed" value={settings.snowSpeed} min={0} max={100} step={1} onChange={(v: number) => update('snowSpeed', v)} />
-                              <Slider label="Wind" value={settings.snowTurbulence} min={0} max={100} step={1} onChange={(v: number) => update('snowTurbulence', v)} />
-                              <Slider label="Flake Size" value={settings.snowSize} min={0} max={100} step={1} onChange={(v: number) => update('snowSize', v)} />
-                              <Slider label="Fog" value={settings.fog} min={0} max={100} step={1} onChange={(v: number) => update('fog', v)} />
-                          </Section>
+                                <Section title="Ornaments" icon={Gift}>
+                                    <button onClick={() => fileInputRef.current?.click()} className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg text-white font-bold text-xs shadow-lg shadow-blue-900/40 transition-all mb-4 border border-blue-400/30">
+                                        ADD PHOTOS
+                                    </button>
+                                    <ColorPicker label="Tree Color" value={settings.treeColor} onChange={(v: string) => update('treeColor', v)} />
+                                </Section>
 
-                          <Section title="Lens" icon={Camera}>
-                              <Toggle label="Depth of Field" value={settings.showBokeh} onChange={(v: boolean) => update('showBokeh', v)} />
-                              <Slider label="Bloom" value={settings.magic} min={0} max={100} step={1} onChange={(v: number) => update('magic', v)} />
-                              <Slider label="Vignette" value={settings.vignetteIntensity} min={0} max={100} step={1} onChange={(v: number) => update('vignetteIntensity', v)} />
-                              <Slider label="Roundness" value={settings.vignetteRoundness} min={0} max={100} step={1} onChange={(v: number) => update('vignetteRoundness', v)} />
-                              <Slider label="Rotate Speed" value={settings.speed} min={0} max={100} step={1} onChange={(v: number) => update('speed', v)} />
-                          </Section>
-                      </div>
-                  )}
-              </div>
-          </Panel>
-      </div>
+                                <Section title="Details" icon={Box}>
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        <Toggle label="Tree Skirt" value={settings.showTreeSkirt} onChange={(v: boolean) => update('showTreeSkirt', v)} />
+                                        <Toggle label="Snowy Tree" value={settings.showSnowOnBranches} onChange={(v: boolean) => update('showSnowOnBranches', v)} />
+                                    </div>
+                                </Section>
 
-      {/* BOTTOM FLOATING BAR */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-          <Panel className="flex items-center gap-1 p-1 rounded-full px-2">
-               <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full transition-all shadow-lg hover:scale-105 active:scale-95"
-                  title="Add Memory"
-               >
-                   <Upload size={20} />
-               </button>
-               <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => onUpload(e.target.files)} accept="image/*" onClick={(e) => (e.currentTarget.value = '')} />
+                                <Section title="Greetings" icon={MessageSquare}>
+                                    <div className="space-y-3">
+                                        <Toggle label="Cinema Subtitles" value={settings.showCinemaSubtitles} onChange={(v: boolean) => update('showCinemaSubtitles', v)} />
+                                        
+                                        <div className="space-y-2">
+                                            <Toggle label="Typewriter Card" value={settings.showTypewriterCard} onChange={(v: boolean) => update('showTypewriterCard', v)} />
+                                            {settings.showTypewriterCard && (
+                                                <TextInput value={settings.typewriterMessage} onChange={(v: string) => update('typewriterMessage', v)} placeholder="Card Message..." />
+                                            )}
+                                        </div>
+                                    </div>
+                                </Section>
 
-               <div className="w-px h-8 bg-white/10 mx-1" />
+                                <Section title="Magic" icon={Wand2}>
+                                    <Slider label="Tree Lights" value={settings.flicker} min={0} max={100} step={1} onChange={(v: number) => update('flicker', v)} />
+                                    <Slider label="Sparkles" value={settings.sparkles} min={0} max={100} step={1} onChange={(v: number) => update('sparkles', v)} />
+                                </Section>
+                            </div>
+                        )}
 
-               {images.length > 0 && (
-                   <button 
-                      onClick={onToggleAutoRotate}
-                      className={`p-3 rounded-full hover:bg-white/10 transition-colors ${isAutoRotate ? 'text-green-400' : 'text-white/60'}`}
-                   >
-                       {isAutoRotate ? <Pause size={20} /> : <Play size={20} />}
-                   </button>
-               )}
+                        {activeTab === 'camera' && (
+                            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                <Section title="Weather" icon={CloudFog}>
+                                    <div className="grid grid-cols-2 gap-2 mb-3">
+                                        <Toggle label="Rolling Fog" value={settings.showGroundFog} onChange={(v: boolean) => update('showGroundFog', v)} />
+                                        <Toggle label="Diamond Dust" value={settings.showDiamondDust} onChange={(v: boolean) => update('showDiamondDust', v)} />
+                                    </div>
+                                    <Slider label="Snow Amount" value={settings.snow} min={0} max={100} step={1} onChange={(v: number) => update('snow', v)} />
+                                    <Slider label="Speed" value={settings.snowSpeed} min={0} max={100} step={1} onChange={(v: number) => update('snowSpeed', v)} />
+                                    <Slider label="Wind" value={settings.snowTurbulence} min={0} max={100} step={1} onChange={(v: number) => update('snowTurbulence', v)} />
+                                    <Slider label="Flake Size" value={settings.snowSize} min={0} max={100} step={1} onChange={(v: number) => update('snowSize', v)} />
+                                    <Slider label="Fog" value={settings.fog} min={0} max={100} step={1} onChange={(v: number) => update('fog', v)} />
+                                </Section>
 
-               <button 
-                  onClick={() => setShowSettings(!showSettings)}
-                  className={`p-3 rounded-full hover:bg-white/10 transition-colors ${showSettings ? 'text-white bg-white/10' : 'text-white/60'}`}
-               >
-                   <Settings2 size={20} />
-               </button>
+                                <Section title="Lens" icon={Camera}>
+                                    <div className="mb-2">
+                                        <Toggle label="Depth of Field" value={settings.showBokeh} onChange={(v: boolean) => update('showBokeh', v)} />
+                                    </div>
+                                    <Slider label="Bloom" value={settings.magic} min={0} max={100} step={1} onChange={(v: number) => update('magic', v)} />
+                                    <Slider label="Vignette" value={settings.vignetteIntensity} min={0} max={100} step={1} onChange={(v: number) => update('vignetteIntensity', v)} />
+                                    <Slider label="Roundness" value={settings.vignetteRoundness} min={0} max={100} step={1} onChange={(v: number) => update('vignetteRoundness', v)} />
+                                    <Slider label="Rotate Speed" value={settings.speed} min={0} max={100} step={1} onChange={(v: number) => update('speed', v)} />
+                                </Section>
+                            </div>
+                        )}
+                    </div>
+                </Panel>
+            </div>
+        </>
+      )}
 
-               <button 
-                  onClick={toggleFullscreen}
-                  className="p-3 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-               >
-                   {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-               </button>
-          </Panel>
-      </div>
+      {/* When Fullscreen, subtle exit button */}
+      {isFullscreen && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-0 hover:opacity-100 transition-opacity z-50 pointer-events-auto">
+                <button 
+                    onClick={toggleFullscreen}
+                    className="px-4 py-2 bg-black/40 text-white/50 rounded-full text-xs font-bold backdrop-blur-sm border border-white/10"
+                >
+                    Exit Fullscreen
+                </button>
+          </div>
+      )}
 
     </div>
   );

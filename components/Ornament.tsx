@@ -1,11 +1,13 @@
 
+
 import React, { Suspense, useRef, useMemo } from 'react';
 import { useTexture, Decal } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { UploadedImage } from '../types';
 
 interface OrnamentProps {
-  image?: string;
+  data?: UploadedImage;
 }
 
 // Slightly smaller sphere to help spacing
@@ -26,11 +28,11 @@ const placeholderMaterial = new THREE.MeshStandardMaterial({
     envMapIntensity: 0.5 
 });
 
-const OrnamentMesh = ({ image }: { image: string }) => {
+const OrnamentMesh = ({ data }: { data: UploadedImage }) => {
   const groupRef = useRef<THREE.Group>(null);
   const phase = useMemo(() => Math.random() * 100, []);
 
-  const texture = useTexture(image);
+  const texture = useTexture(data.url);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;
   
@@ -42,29 +44,22 @@ const OrnamentMesh = ({ image }: { image: string }) => {
     groupRef.current.rotation.y = Math.sin(t * 0.5 + phase) * 0.10;
   });
 
+  // Use dominant color extracted from image, or fallback to gray
+  const baseColor = data.dominantColor || "#909090";
+
   return (
     <group ref={groupRef}>
         <group position={[0, -0.3, 0]}>
-            {/* 
-                Scale 0.26 reduced from 0.28 to minimize clipping with neighbors.
-            */}
             <mesh geometry={sphereGeo} scale={0.26}>
                 <meshStandardMaterial 
-                    color="#909090" // Darker gray base for contrast
-                    roughness={0.9} // Extremely matte
-                    metalness={0.0} // No metal
-                    emissive="#000000" // Absolutely no emission
+                    color={baseColor} // Blended color from photo
+                    roughness={0.9} 
+                    metalness={0.0} 
+                    emissive="#000000" 
                     emissiveIntensity={0}
-                    envMapIntensity={0.1} // Minimal environment reflection
+                    envMapIntensity={0.1} 
                 />
                 
-                {/* 
-                   DECAL PROJECTION:
-                   Restricted Z-scale prevents bleed-through to back of sphere.
-                   High negative polygonOffset ensures it renders ON TOP of the sphere.
-                   RenderOrder forced higher.
-                   Scale adjusted to 1.85 to cover more of the ball without extreme stretching.
-                */}
                 <Decal 
                     position={[0, 0, 1]} 
                     rotation={[0, 0, 0]} 
@@ -76,12 +71,12 @@ const OrnamentMesh = ({ image }: { image: string }) => {
                         transparent 
                         polygonOffset 
                         polygonOffsetFactor={-20} 
-                        roughness={0.9} // Match base matte look
+                        roughness={0.9} 
                         metalness={0.0}
                         envMapIntensity={0.2}
                         emissive="#000000"
                         emissiveIntensity={0}
-                        depthWrite={false} // Helps avoid z-fighting
+                        depthWrite={false} 
                     />
                 </Decal>
             </mesh>
@@ -93,14 +88,14 @@ const OrnamentMesh = ({ image }: { image: string }) => {
   );
 };
 
-const Ornament: React.FC<OrnamentProps> = ({ image }) => {
+const Ornament: React.FC<OrnamentProps> = ({ data }) => {
   return (
     <group>
         <Suspense fallback={
             <mesh position={[0, -0.3, 0]} geometry={sphereGeo} scale={0.26} material={placeholderMaterial} />
         }>
-            {image ? (
-                <OrnamentMesh image={image} />
+            {data ? (
+                <OrnamentMesh data={data} />
             ) : (
                 <mesh position={[0, -0.3, 0]} geometry={sphereGeo} scale={0.26} material={placeholderMaterial} />
             )}

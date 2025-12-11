@@ -9,13 +9,14 @@ export interface OrnamentData {
 export interface UploadedImage {
   id: string;
   url: string;
+  dominantColor?: string;
 }
 
 export type RenderStyle = 'cinematic' | 'studio' | 'cozy' | 'neon' | 'arctic' | 'vintage';
 
 export interface SceneSettings {
   // 0. SYSTEM
-  quality: 'high' | 'balanced' | 'fast';
+  quality: 'high' | 'balanced' | 'low';
 
   // 1. LIGHTING & SKY
   timeOfDay: number;      // 0-24
@@ -39,9 +40,9 @@ export interface SceneSettings {
   groundReflection: number; // 0-1 (Mirror intensity)
   
   // 3. MAGIC & EFFECTS
-  flicker: number;    // 0-100 (Tree LED intensity/speed)
   sparkles: number;   // 0-100 (Magic glowing pixels)
   magic: number;      // 0-100 (Bloom)
+  flicker: number;    // 0-100 (Tree Lights)
   
   // NEW VISUALS
   showGroundFog: boolean;

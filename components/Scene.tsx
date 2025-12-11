@@ -1,5 +1,3 @@
-
-
 import React, { Suspense, useState, useMemo, useRef, forwardRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Environment, Sparkles, MeshReflectorMaterial, Cloud, useTexture } from '@react-three/drei';
@@ -236,7 +234,7 @@ const FallingSnow: React.FC<{ count: number, speed: number, turbulence: number, 
     });
 
     return (
-        <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+        <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
             <octahedronGeometry args={[1, 0]} /> 
             {diamondDust ? (
                  <meshStandardMaterial 
@@ -334,7 +332,7 @@ const Effects: React.FC<{ settings: SceneSettings, renderStyle: RenderStyle }> =
                  <DepthOfField 
                     focusDistance={0.035} // Adjusted to prevent close-up background disappearance (was 0.025)
                     focalLength={0.02}    // Reduced focal length for wider focus plane
-                    bokehScale={4} 
+                    bokehScale={2}        // Reduced bokeh scale from 4 to 2 to make background visible
                     height={480} 
                  />
             ) : null}

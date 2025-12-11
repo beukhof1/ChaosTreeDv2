@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sparkles, Instances, Instance, useTexture, Text3D } from '@react-three/drei';
@@ -29,7 +27,7 @@ interface TreeLayerProps {
     radius: number;
     height: number;
     startGlobalIndex: number;
-    occupiedSlots: Map<number, string>;
+    occupiedSlots: Map<number, UploadedImage>;
     ornamentCount: number;
     startAngle: number;
     color: string;
@@ -168,13 +166,21 @@ const getOrnamentPosition = (layerIdx: number, ornIdx: number, total: number, ra
     const baseAngle = startAngle + (ornIdx * (Math.PI * 2 / total));
     const jitter = (rand - 0.5) * 0.8; 
     const angle = baseAngle + jitter;
-    const minH = 0.05; const maxH = 0.3; 
-    const t = minH + Math.abs(rand2) * (maxH - minH); 
+    // Lower half placement (points) (approx bottom 20% of layer)
+    // height ranges from -height/2 to height/2. 
+    // We want near -height/2. 
+    // Let's go for t = 0 to 0.1 (very bottom)
+    const t = 0.05 + Math.abs(rand2) * 0.15; // 0.05 - 0.20 range from bottom
     const yPos = -height/2 + (t * height);
+    
+    // Calculate radius at this height based on cone flare
     const yNorm = (yPos + height/2) / height;
     const flare = Math.pow(1 - Math.max(0, Math.min(1, yNorm)), 1.4);
     const surfaceRadius = radius * flare;
-    const rPos = surfaceRadius + 0.7; 
+    
+    // Tighter radial offset to hang exactly at the tips
+    const rPos = surfaceRadius + 0.2; 
+    
     const x = Math.cos(angle) * rPos;
     const z = Math.sin(angle) * rPos;
     const rotY = -angle + Math.PI / 2;
@@ -197,15 +203,15 @@ const TreeLayer: React.FC<TreeLayerProps> = ({
 
     return (
         <group position={position}>
-            <mesh geometry={geometry} receiveShadow castShadow={false}>
+            <mesh geometry={geometry} receiveShadow castShadow>
                 <meshToonMaterial color={color} vertexColors emissive={isNight ? color : "#081c08"} emissiveIntensity={isNight ? 0.4 : 0.2} bumpMap={texture || null} bumpScale={0.05} />
             </mesh>
             {ornamentPositions.map((pos, i) => {
                 const globalIdx = startGlobalIndex + i;
-                const imgId = occupiedSlots.get(globalIdx);
+                const imgData = occupiedSlots.get(globalIdx);
                 return (
                     <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, pos.rotY, 0]}>
-                        <Ornament image={imgId} />
+                        <Ornament data={imgData} />
                     </group>
                 );
             })}
@@ -215,7 +221,7 @@ const TreeLayer: React.FC<TreeLayerProps> = ({
 
 const FILLER_COLORS = ['#87CEFA', '#1E90FF', '#FFD700', '#FFFFFF'];
 
-const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, string> }> = React.memo(({ layers, occupiedSlots }) => {
+const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, UploadedImage> }> = React.memo(({ layers, occupiedSlots }) => {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const dummy = useMemo(() => new THREE.Object3D(), []);
     const color = useMemo(() => new THREE.Color(), []);
@@ -227,17 +233,33 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, string
              const effectiveHeight = layer.height * layer.scale;
              const fillerCount = Math.floor(layer.ornaments * 2); 
              for(let i=0; i < fillerCount; i++) {
-                 const pos = getOrnamentPosition(layerIdx, i, fillerCount, effectiveRadius, effectiveHeight, Math.PI / 3);
-                 // Push fillers slightly inwards (subtract 0.1 from radius vector) to avoid collision with main ornaments
-                 const v = new THREE.Vector3(pos.x, pos.y + layer.position[1], pos.z);
-                 v.multiplyScalar(0.95); 
+                 // Reuse getOrnamentPosition but modify slightly
+                 const seed = layerIdx * 137 + i * 928;
+                 const rand = (Math.sin(seed) * 10000) % 1;
+                 const rand2 = (Math.cos(seed) * 10000) % 1;
+                 const angle = (i * (Math.PI * 2 / fillerCount)) + (rand * 0.5);
+                 
+                 // Fillers can be a bit higher up in the layer
+                 const t = 0.2 + Math.abs(rand2) * 0.4;
+                 const yPos = -effectiveHeight/2 + (t * effectiveHeight);
+                 const yNorm = (yPos + effectiveHeight/2) / effectiveHeight;
+                 const flare = Math.pow(1 - Math.max(0, Math.min(1, yNorm)), 1.4);
+                 
+                 // Tucked in closer
+                 const rPos = (effectiveRadius * flare) + 0.1; 
+                 
+                 const x = Math.cos(angle) * rPos;
+                 const z = Math.sin(angle) * rPos;
+                 
+                 // Shift Y relative to layer position
+                 const v = new THREE.Vector3(x, yPos + layer.position[1], z);
                  
                  items.push({ 
                      pos: v, 
-                     rotY: pos.rotY, 
+                     rotY: -angle + Math.PI/2, 
                      colorHex: FILLER_COLORS[Math.floor(Math.random() * FILLER_COLORS.length)], 
                      // Smaller scale for fillers
-                     scale: 0.25 + Math.random() * 0.2 
+                     scale: 0.15 + Math.random() * 0.15
                 });
              }
         });
@@ -260,7 +282,7 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, string
     }, [data]);
 
     return (
-        <instancedMesh ref={meshRef} args={[undefined, undefined, data.length]}>
+        <instancedMesh ref={meshRef} args={[undefined, undefined, data.length]} castShadow receiveShadow>
             <sphereGeometry args={[0.2, 16, 16]} />
             <meshStandardMaterial roughness={0.2} metalness={0.8} envMapIntensity={1.2} />
         </instancedMesh>
@@ -289,22 +311,22 @@ const boxGeo = new THREE.BoxGeometry(1, 1, 1);
 const Gift = ({ position, rotation, scale, material, ribbonMaterial }: any) => (
     <group position={position} rotation={rotation}>
         <mesh castShadow receiveShadow material={material} geometry={boxGeo} scale={scale} />
-        <mesh receiveShadow material={ribbonMaterial} geometry={boxGeo} position={[0, 0, 0]} scale={[scale[0] * 1.01, scale[1] * 1.01, scale[2] * 0.15]} />
-        <mesh receiveShadow material={ribbonMaterial} geometry={boxGeo} position={[0, 0, 0]} scale={[scale[0] * 0.15, scale[1] * 1.01, scale[2] * 1.01]} />
+        <mesh castShadow receiveShadow material={ribbonMaterial} geometry={boxGeo} position={[0, 0, 0]} scale={[scale[0] * 1.01, scale[1] * 1.01, scale[2] * 0.15]} />
+        <mesh castShadow receiveShadow material={ribbonMaterial} geometry={boxGeo} position={[0, 0, 0]} scale={[scale[0] * 0.15, scale[1] * 1.01, scale[2] * 1.01]} />
     </group>
 );
 
 const Presents: React.FC = () => {
     const gifts = useMemo(() => {
         const items = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 30; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const dist = 1.5 + Math.random() * 2.5; 
+            const dist = 1.5 + Math.random() * 3.5; 
             const x = Math.cos(angle) * dist;
             const z = Math.sin(angle) * dist;
-            const width = 0.6 + Math.random() * 0.6;
-            const depth = 0.6 + Math.random() * 0.6;
-            const height = 0.5 + Math.random() * 0.6;
+            const width = 0.5 + Math.random() * 0.5;
+            const depth = 0.5 + Math.random() * 0.5;
+            const height = 0.4 + Math.random() * 0.5;
             items.push({
                 position: [x, -3.0 + height/2, z] as [number, number, number],
                 rotation: [0, Math.random() * Math.PI, 0] as [number, number, number],
@@ -336,7 +358,7 @@ const LogoTextureMesh = ({ url, style }: { url: string, style: 'logo_spin' | 'lo
     if (style === 'logo_spin') {
         return (
             <group ref={ref} position={[0, 14.2, 0]}>
-                <mesh>
+                <mesh castShadow receiveShadow>
                      <planeGeometry args={[3, 3]} /> 
                      <meshStandardMaterial map={tex} side={THREE.DoubleSide} transparent alphaTest={0.1} roughness={0.5} metalness={0.1} />
                 </mesh>
@@ -416,7 +438,7 @@ const TopperStar: React.FC<{ showRays: boolean, type: 'star' | 'logo_spin' | 'lo
 
     return (
         <group ref={ref} position={[0, 14.2, 0]}> 
-            <mesh geometry={starGeometry}>
+            <mesh geometry={starGeometry} castShadow>
                 <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} roughness={0.1} metalness={1.0} />
             </mesh>
              <pointLight intensity={3} distance={6} color="#FFD700" />
@@ -430,8 +452,72 @@ const TopperStar: React.FC<{ showRays: boolean, type: 'star' | 'logo_spin' | 'lo
     );
 };
 
+const FairyLights: React.FC<{ flickerIntensity: number }> = React.memo(({ flickerIntensity }) => {
+    const count = 350; 
+    const meshRef = useRef<THREE.InstancedMesh>(null);
+    const dummy = useMemo(() => new THREE.Object3D(), []);
+    const colors = useMemo(() => new Float32Array(count * 3), [count]);
+
+    // Positions for a spiral
+    useEffect(() => {
+        if (!meshRef.current) return;
+        const tempColor = new THREE.Color();
+        const baseColors = [0xffaa00, 0xff0000, 0x00ff00, 0x0088ff];
+        
+        for (let i = 0; i < count; i++) {
+             const pct = i / count;
+             const h = 1.0 + pct * 12.0; 
+             const angle = pct * Math.PI * 30; 
+             
+             // Conical radius: wider at bottom, narrower at top
+             const r = 2.8 * (1 - pct * 0.85); 
+             
+             const x = Math.cos(angle) * r;
+             const z = Math.sin(angle) * r;
+             
+             dummy.position.set(x, h, z);
+             const s = 0.04;
+             dummy.scale.setScalar(s);
+             dummy.updateMatrix();
+             meshRef.current.setMatrixAt(i, dummy.matrix);
+             
+             tempColor.setHex(baseColors[Math.floor(Math.random() * baseColors.length)]);
+             meshRef.current.setColorAt(i, tempColor);
+        }
+        meshRef.current.instanceMatrix.needsUpdate = true;
+        if(meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+    }, []);
+
+    useFrame((state) => {
+        if (!meshRef.current) return;
+        // Simple blink effect
+        if (flickerIntensity > 0) {
+            const t = state.clock.elapsedTime;
+            // Modulate emissive intensity in shader? 
+            // Or just scale a bit to simulate pulse
+            const s = 0.04 + Math.sin(t * 5) * 0.01 * (flickerIntensity/100);
+            // Updating all scales is heavy, maybe just keep static glow 
+            // relying on Bloom for the "light" look
+        }
+    });
+
+    return (
+        <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+            <sphereGeometry args={[1, 8, 8]} />
+            <meshStandardMaterial 
+                toneMapping={false} 
+                emissive="white" 
+                emissiveIntensity={2.0} 
+                color="white" 
+                roughness={0.2}
+            />
+        </instancedMesh>
+    );
+});
+
 const Tree: React.FC<TreeProps> = React.memo(({ 
     images, onUpdateTargets, rootOffset = [0, 0, 0], position = [0, 0, 0], color = '#2E8B57', isNight = false, 
+    flickerIntensity = 0,
     showTreeSkirt = false,
     showSnowOnBranches = false,
     topperType = 'star', logoUrl = null,
@@ -439,6 +525,7 @@ const Tree: React.FC<TreeProps> = React.memo(({
   const [shuffleNonce, setShuffleNonce] = useState(0);
 
   useEffect(() => {
+    // 5 minutes timer to shuffle images
     const interval = setInterval(() => { setShuffleNonce(n => n + 1); }, 5 * 60 * 1000); 
     return () => clearInterval(interval);
   }, []);
@@ -465,10 +552,11 @@ const Tree: React.FC<TreeProps> = React.memo(({
   const totalOrnaments = treeLayers.reduce((acc, layer) => acc + layer.ornaments, 0);
 
   const occupiedSlots = useMemo(() => {
-    const map = new Map<number, string>();
+    // Map number -> full Image object
+    const map = new Map<number, UploadedImage>();
     if (shuffledImages.length === 0) return map;
     for (let i = 0; i < totalOrnaments; i++) {
-        map.set(i, shuffledImages[i % shuffledImages.length].url);
+        map.set(i, shuffledImages[i % shuffledImages.length]);
     }
     return map;
   }, [shuffledImages, totalOrnaments]);
@@ -495,12 +583,14 @@ const Tree: React.FC<TreeProps> = React.memo(({
     <group position={position}>
         <TopperStar showRays={false} type={topperType || 'star'} logoUrl={logoUrl} />
         
+        <FairyLights flickerIntensity={flickerIntensity} />
+        
         {/* Presents are always on now */}
         <Presents />
 
         {showTreeSkirt ? <TreeSkirt /> : null}
         
-        <mesh position={[0, 4.0, 0]} receiveShadow castShadow={false}>
+        <mesh position={[0, 4.0, 0]} receiveShadow castShadow>
             <cylinderGeometry args={[0.05, 0.8, 14, 16]} />
             <meshStandardMaterial color="#8d5524" roughness={0.9} />
         </mesh>
