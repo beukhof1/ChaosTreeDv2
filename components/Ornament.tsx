@@ -63,11 +63,12 @@ const OrnamentMesh = ({ image }: { image: string }) => {
                    Restricted Z-scale prevents bleed-through to back of sphere.
                    High negative polygonOffset ensures it renders ON TOP of the sphere.
                    RenderOrder forced higher.
+                   Scale adjusted to 1.85 to cover more of the ball without extreme stretching.
                 */}
                 <Decal 
                     position={[0, 0, 1]} 
                     rotation={[0, 0, 0]} 
-                    scale={[2.3, 2.3, 1]} 
+                    scale={[1.85, 1.85, 1]} 
                     renderOrder={1}
                 >
                     <meshStandardMaterial 
