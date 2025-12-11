@@ -1,3 +1,4 @@
+
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sparkles, Instances, Instance, useTexture, Text3D } from '@react-three/drei';
@@ -167,9 +168,6 @@ const getOrnamentPosition = (layerIdx: number, ornIdx: number, total: number, ra
     const jitter = (rand - 0.5) * 0.8; 
     const angle = baseAngle + jitter;
     // Lower half placement (points) (approx bottom 20% of layer)
-    // height ranges from -height/2 to height/2. 
-    // We want near -height/2. 
-    // Let's go for t = 0 to 0.1 (very bottom)
     const t = 0.05 + Math.abs(rand2) * 0.15; // 0.05 - 0.20 range from bottom
     const yPos = -height/2 + (t * height);
     
@@ -178,8 +176,8 @@ const getOrnamentPosition = (layerIdx: number, ornIdx: number, total: number, ra
     const flare = Math.pow(1 - Math.max(0, Math.min(1, yNorm)), 1.4);
     const surfaceRadius = radius * flare;
     
-    // Tighter radial offset to hang exactly at the tips
-    const rPos = surfaceRadius + 0.2; 
+    // Push out further to prevent clipping (0.4 extra offset)
+    const rPos = surfaceRadius + 0.4; 
     
     const x = Math.cos(angle) * rPos;
     const z = Math.sin(angle) * rPos;
@@ -203,7 +201,7 @@ const TreeLayer: React.FC<TreeLayerProps> = ({
 
     return (
         <group position={position}>
-            <mesh geometry={geometry} receiveShadow castShadow>
+            <mesh geometry={geometry} receiveShadow>
                 <meshToonMaterial color={color} vertexColors emissive={isNight ? color : "#081c08"} emissiveIntensity={isNight ? 0.4 : 0.2} bumpMap={texture || null} bumpScale={0.05} />
             </mesh>
             {ornamentPositions.map((pos, i) => {
@@ -219,7 +217,8 @@ const TreeLayer: React.FC<TreeLayerProps> = ({
     );
 };
 
-const FILLER_COLORS = ['#87CEFA', '#1E90FF', '#FFD700', '#FFFFFF'];
+// Updated filler colors: Light Blue, Blue, Yellow
+const FILLER_COLORS = ['#87CEFA', '#1E90FF', '#FFD700'];
 
 const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, UploadedImage> }> = React.memo(({ layers, occupiedSlots }) => {
     const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -231,7 +230,8 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, Upload
         layers.forEach((layer, layerIdx) => {
              const effectiveRadius = layer.radius * layer.scale;
              const effectiveHeight = layer.height * layer.scale;
-             const fillerCount = Math.floor(layer.ornaments * 2); 
+             // Increased count for MANY more filler baubles
+             const fillerCount = Math.floor(layer.ornaments * 12); 
              for(let i=0; i < fillerCount; i++) {
                  // Reuse getOrnamentPosition but modify slightly
                  const seed = layerIdx * 137 + i * 928;
@@ -245,8 +245,8 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, Upload
                  const yNorm = (yPos + effectiveHeight/2) / effectiveHeight;
                  const flare = Math.pow(1 - Math.max(0, Math.min(1, yNorm)), 1.4);
                  
-                 // Tucked in closer
-                 const rPos = (effectiveRadius * flare) + 0.1; 
+                 // Randomize depth slightly
+                 const rPos = (effectiveRadius * flare) + (0.05 + Math.random() * 0.15); 
                  
                  const x = Math.cos(angle) * rPos;
                  const z = Math.sin(angle) * rPos;
@@ -258,8 +258,8 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, Upload
                      pos: v, 
                      rotY: -angle + Math.PI/2, 
                      colorHex: FILLER_COLORS[Math.floor(Math.random() * FILLER_COLORS.length)], 
-                     // Smaller scale for fillers
-                     scale: 0.15 + Math.random() * 0.15
+                     // Smaller scale for fillers: 0.12 to 0.18 (Image balls are ~0.26)
+                     scale: 0.12 + Math.random() * 0.06
                 });
              }
         });
@@ -282,8 +282,8 @@ const FillerBaubles: React.FC<{ layers: any[], occupiedSlots: Map<number, Upload
     }, [data]);
 
     return (
-        <instancedMesh ref={meshRef} args={[undefined, undefined, data.length]} castShadow receiveShadow>
-            <sphereGeometry args={[0.2, 16, 16]} />
+        <instancedMesh ref={meshRef} args={[undefined, undefined, data.length]} receiveShadow>
+            <sphereGeometry args={[1, 16, 16]} />
             <meshStandardMaterial roughness={0.2} metalness={0.8} envMapIntensity={1.2} />
         </instancedMesh>
     );
@@ -358,7 +358,7 @@ const LogoTextureMesh = ({ url, style }: { url: string, style: 'logo_spin' | 'lo
     if (style === 'logo_spin') {
         return (
             <group ref={ref} position={[0, 14.2, 0]}>
-                <mesh castShadow receiveShadow>
+                <mesh receiveShadow>
                      <planeGeometry args={[3, 3]} /> 
                      <meshStandardMaterial map={tex} side={THREE.DoubleSide} transparent alphaTest={0.1} roughness={0.5} metalness={0.1} />
                 </mesh>
@@ -438,7 +438,7 @@ const TopperStar: React.FC<{ showRays: boolean, type: 'star' | 'logo_spin' | 'lo
 
     return (
         <group ref={ref} position={[0, 14.2, 0]}> 
-            <mesh geometry={starGeometry} castShadow>
+            <mesh geometry={starGeometry}>
                 <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} roughness={0.1} metalness={1.0} />
             </mesh>
              <pointLight intensity={3} distance={6} color="#FFD700" />
@@ -590,7 +590,7 @@ const Tree: React.FC<TreeProps> = React.memo(({
 
         {showTreeSkirt ? <TreeSkirt /> : null}
         
-        <mesh position={[0, 4.0, 0]} receiveShadow castShadow>
+        <mesh position={[0, 4.0, 0]} receiveShadow>
             <cylinderGeometry args={[0.05, 0.8, 14, 16]} />
             <meshStandardMaterial color="#8d5524" roughness={0.9} />
         </mesh>

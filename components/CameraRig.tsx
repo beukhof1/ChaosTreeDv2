@@ -113,18 +113,19 @@ const CameraRig: React.FC<CameraRigProps> = ({ active, targets = [], speedConfig
         const focusPos = new Vector3().copy(target).add(dirToTarget.multiplyScalar(ZOOM_DIST));
         focusPos.y = target.y;
 
-        // Weight calculation - increased transition window for smoother ease-in/out
+        // Weight calculation - Smoother transition
         let weight = 0;
-        const TRANSITION_PCT = 0.3; // 30% of time spent moving in/out
+        const TRANSITION_PCT = 0.4; // Increased window for smoother ease-in/out
         
+        // Smootherstep function: t * t * t * (t * (t * 6 - 15) + 10)
+        const smootherstep = (x: number) => x * x * x * (x * (x * 6 - 15) + 10);
+
         if (cycleProgress < TRANSITION_PCT) {
-            // Smoothstep for ease-in
             const p = cycleProgress / TRANSITION_PCT;
-            weight = p * p * (3 - 2 * p);
+            weight = smootherstep(p);
         } else if (cycleProgress > (1 - TRANSITION_PCT)) {
-            // Smoothstep for ease-out
             const p = (1 - cycleProgress) / TRANSITION_PCT;
-            weight = p * p * (3 - 2 * p);
+            weight = smootherstep(p);
         } else {
             weight = 1;
         }
@@ -146,11 +147,10 @@ const CameraRig: React.FC<CameraRigProps> = ({ active, targets = [], speedConfig
         const currentTheta = orbitTheta + deltaTheta * Math.pow(weight, 0.5); 
         
         // Height Lerp
-        const currentY = MathUtils.lerp(orbitPos.y, focusPos.y, Math.pow(weight, 1.5));
+        const currentY = MathUtils.lerp(orbitPos.y, focusPos.y, Math.pow(weight, 1.2));
 
-        // Radius Lerp 
-        const radiusWeight = Math.pow(weight, 2); 
-        const currentRad = MathUtils.lerp(orbitRadius, focusRadius, radiusWeight);
+        // Radius Lerp - linear interpolation for predictable path
+        const currentRad = MathUtils.lerp(orbitRadius, focusRadius, weight);
         
         finalPos.set(
             Math.sin(currentTheta) * currentRad,
@@ -164,14 +164,15 @@ const CameraRig: React.FC<CameraRigProps> = ({ active, targets = [], speedConfig
         }
 
         // LookAt Logic
-        const lookAtWeight = Math.pow(weight, 0.2); 
+        const lookAtWeight = Math.pow(weight, 0.5); 
         
         // Offset TARGET: 0 = exact center of screen
         const offsetTarget = target.clone();
-        offsetTarget.y += 0.0; 
+        // Look slightly below ball to frame it centered/slightly high
+        offsetTarget.y -= 0.0; 
 
         // When locked in, force strict lookAt to target center
-        if (weight > 0.8) {
+        if (weight > 0.9) {
             finalLookAt.copy(offsetTarget); 
         } else {
             finalLookAt.lerpVectors(orbitLookAt, offsetTarget, lookAtWeight);
@@ -192,8 +193,8 @@ const CameraRig: React.FC<CameraRigProps> = ({ active, targets = [], speedConfig
         }
     }
 
-    // Increased lerp speed slightly for responsiveness during smoothing
-    const lerpSpeed = isDragging.current ? 0.2 : 0.1;
+    // Increased lerp speed for responsiveness but keep it smooth
+    const lerpSpeed = isDragging.current ? 0.2 : 0.08;
     state.camera.position.lerp(finalPos, lerpSpeed);
     currentLookAt.current.lerp(finalLookAt, lerpSpeed);
     state.camera.lookAt(currentLookAt.current);

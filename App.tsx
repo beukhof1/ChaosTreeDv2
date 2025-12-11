@@ -5,30 +5,30 @@ import { UploadedImage, RenderStyle, SceneSettings } from './types';
 
 // FRESH DEFAULTS
 export const DEFAULT_SETTINGS: SceneSettings = {
-  quality: 'balanced',    // Default to balanced for stability
+  quality: 'high',    // Default to high
 
-  timeOfDay: 15,      // 3 PM
-  isTimeAuto: false,
-  timeLoopMode: 'cycle', // Default to standard 24h cycle
+  timeOfDay: 12,      // Noon start
+  isTimeAuto: true,   // Auto time enabled
+  timeLoopMode: 'pingpong', // Day Loop mode
   bgType: 'mountains',
-  skyColor: '#87CEEB', // Sky Blue
+  skyColor: '#47d4f0', // New Sky Tint
   exposure: 1.0,
-  shadowIntensity: 1.0, 
-  sceneLight: 1.0,    
-  treeColor: '#2E8B57',
+  shadowIntensity: 1.5, // Sunlight
+  sceneLight: 1.5,    // Ambient
+  treeColor: '#2e8a84', // New Tree Color
   
-  snow: 50,           // Medium snowfall
-  snowSpeed: 20,      // Slow speed
-  snowTurbulence: 10, // Very low wind
-  snowSize: 10,       // Small flakes
-  fog: 15,            // Light fog
-  showGroundReflections: false, // Default off for performance
+  snow: 100,           // Max snow
+  snowSpeed: 40,      // Faster
+  snowTurbulence: 30, // More wind
+  snowSize: 40,       // Larger flakes
+  fog: 15,            // Global fog
+  showGroundReflections: false, 
   groundRoughness: 0.15,
   groundReflection: 0.5,
 
-  flicker: 0,         // Tree lights off
-  sparkles: 20,       // Subtle magic
-  magic: 30,          // Moderate bloom
+  flicker: 0,         
+  sparkles: 50,       // More magic sparkles
+  magic: 25,          // Reduced Bloom
   
   // New Visuals Default Off
   showGroundFog: false,
@@ -43,18 +43,18 @@ export const DEFAULT_SETTINGS: SceneSettings = {
   logoUrl: null,
 
   // Cozy Extras
-  showTreeSkirt: true, // Enabled by default
+  showTreeSkirt: true, 
   
   showSnowOnBranches: false,
   showBokeh: false,
 
   // Greetings
-  showCinemaSubtitles: false,
+  showCinemaSubtitles: true, // Enabled by default
   showTypewriterCard: false,
   typewriterMessage: 'Wishing you a season of joy and wonder...',
 };
 
-const STORAGE_KEY = 'memory-tree-save-v7'; // Bump version
+const STORAGE_KEY = 'memory-tree-save-v8'; // Bump version to force new defaults
 
 const App: React.FC = () => {
   // Load initial state from local storage

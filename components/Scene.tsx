@@ -169,91 +169,146 @@ interface SceneProps {
   isProcessing: boolean;
 }
 
-// 3D Snow with rotation, turbulence and size
+// 3D Snow with rotation, turbulence, size and two types of particles
 const FallingSnow: React.FC<{ count: number, speed: number, turbulence: number, size: number, diamondDust: boolean }> = React.memo(({ count, speed, turbulence, size, diamondDust }) => {
-    const meshRef = useRef<THREE.InstancedMesh>(null);
+    const meshRef1 = useRef<THREE.InstancedMesh>(null);
+    const meshRef2 = useRef<THREE.InstancedMesh>(null);
     const dummy = useMemo(() => new THREE.Object3D(), []);
     
-    const positions = useMemo(() => new Float32Array(count * 3), [count]);
-    const speeds = useMemo(() => new Float32Array(count), [count]);
-    const rotations = useMemo(() => new Float32Array(count * 3), [count]);
-    const phases = useMemo(() => new Float32Array(count), [count]);
+    // Split count between primary (flat diamonds) and secondary (hexagons)
+    const count1 = Math.floor(count * 0.7);
+    const count2 = Math.max(0, count - count1);
+
+    // --- SYSTEM 1 (Main) ---
+    const pos1 = useMemo(() => new Float32Array(count1 * 3), [count1]);
+    const spd1 = useMemo(() => new Float32Array(count1), [count1]);
+    const rot1 = useMemo(() => new Float32Array(count1 * 3), [count1]);
+    const phs1 = useMemo(() => new Float32Array(count1), [count1]);
     
-    // speed is 0-100, normalize to useful multiplier
+    // --- SYSTEM 2 (Secondary) ---
+    const pos2 = useMemo(() => new Float32Array(count2 * 3), [count2]);
+    const spd2 = useMemo(() => new Float32Array(count2), [count2]);
+    const rot2 = useMemo(() => new Float32Array(count2 * 3), [count2]);
+    const phs2 = useMemo(() => new Float32Array(count2), [count2]);
+
     const speedMult = (speed / 50) * 1.0;
     const turbMult = (turbulence / 100) * 2.0;
-    // Dramatically reduce base size for finer snow
-    const sizeBase = 0.02 + (size / 100) * 0.15; // Range: 0.02 - 0.17
+    const sizeBase = 0.02 + (size / 100) * 0.15; 
+
+    // Init function
+    const initParticles = (c: number, pos: Float32Array, spd: Float32Array, rot: Float32Array, phs: Float32Array) => {
+        for(let i=0; i<c; i++) {
+            pos[i*3] = (Math.random() - 0.5) * 60;
+            pos[i*3+1] = Math.random() * 40;
+            pos[i*3+2] = (Math.random() - 0.5) * 60;
+            spd[i] = 0.05 + Math.random() * 0.1;
+            rot[i*3] = Math.random() * Math.PI;
+            rot[i*3+1] = Math.random() * Math.PI;
+            rot[i*3+2] = Math.random() * Math.PI;
+            phs[i] = Math.random() * Math.PI * 2;
+        }
+    };
 
     useEffect(() => {
-        for(let i=0; i<count; i++) {
-            positions[i*3] = (Math.random() - 0.5) * 60;
-            positions[i*3+1] = Math.random() * 40;
-            positions[i*3+2] = (Math.random() - 0.5) * 60;
-            speeds[i] = 0.05 + Math.random() * 0.1;
-            rotations[i*3] = Math.random() * Math.PI;
-            rotations[i*3+1] = Math.random() * Math.PI;
-            rotations[i*3+2] = Math.random() * Math.PI;
-            phases[i] = Math.random() * Math.PI * 2;
-        }
-    }, [count]);
+        initParticles(count1, pos1, spd1, rot1, phs1);
+        initParticles(count2, pos2, spd2, rot2, phs2);
+    }, [count1, count2]);
 
     useFrame((state, delta) => {
-        if(!meshRef.current) return;
         const t = state.clock.elapsedTime;
-        for(let i=0; i<count; i++) {
-            positions[i*3+1] -= speeds[i] * speedMult;
-            
-            // Add turbulence (sine wave movement based on time + phase)
-            if (turbMult > 0) {
-                 positions[i*3] += Math.sin(t * 0.5 + phases[i]) * 0.05 * turbMult;
-                 positions[i*3+2] += Math.cos(t * 0.3 + phases[i]) * 0.05 * turbMult;
+        
+        // Update System 1
+        if (meshRef1.current) {
+            for(let i=0; i<count1; i++) {
+                pos1[i*3+1] -= spd1[i] * speedMult;
+                if (turbMult > 0) {
+                    pos1[i*3] += Math.sin(t * 0.5 + phs1[i]) * 0.05 * turbMult;
+                    pos1[i*3+2] += Math.cos(t * 0.3 + phs1[i]) * 0.05 * turbMult;
+                }
+                rot1[i*3] += delta * 0.5;
+                rot1[i*3+1] += delta * 0.3;
+                
+                if (pos1[i*3+1] < -2) {
+                    pos1[i*3+1] = 40;
+                    pos1[i*3] = (Math.random() - 0.5) * 60;
+                    pos1[i*3+2] = (Math.random() - 0.5) * 60;
+                }
+                dummy.position.set(pos1[i*3], pos1[i*3+1], pos1[i*3+2]);
+                dummy.rotation.set(rot1[i*3], rot1[i*3+1], rot1[i*3+2]);
+                const s = sizeBase + Math.sin(phs1[i]) * (sizeBase * 0.3);
+                dummy.scale.set(s, s * 0.1, s); // Flattened crystal shape
+                dummy.updateMatrix();
+                meshRef1.current.setMatrixAt(i, dummy.matrix);
             }
-
-            // Rotate snow for 3D effect
-            rotations[i*3] += delta * 0.5;
-            rotations[i*3+1] += delta * 0.3;
-            
-            if (positions[i*3+1] < -2) {
-                positions[i*3+1] = 40;
-                // Reset X/Z to random to prevent clumps
-                positions[i*3] = (Math.random() - 0.5) * 60;
-                positions[i*3+2] = (Math.random() - 0.5) * 60;
-            }
-            dummy.position.set(positions[i*3], positions[i*3+1], positions[i*3+2]);
-            dummy.rotation.set(rotations[i*3], rotations[i*3+1], rotations[i*3+2]);
-            
-            // Scale to look like flat crystals (flatten on Y axis relative to rotation)
-            const s = sizeBase + Math.sin(phases[i]) * (sizeBase * 0.3);
-            dummy.scale.set(s, s * 0.1, s); // Flattened crystal shape
-            
-            dummy.updateMatrix();
-            meshRef.current.setMatrixAt(i, dummy.matrix);
+            meshRef1.current.instanceMatrix.needsUpdate = true;
         }
-        meshRef.current.instanceMatrix.needsUpdate = true;
+
+        // Update System 2 (Hexagons - slightly floatier)
+        if (meshRef2.current) {
+            for(let i=0; i<count2; i++) {
+                pos2[i*3+1] -= spd2[i] * speedMult * 0.9; // Slightly slower
+                if (turbMult > 0) {
+                    pos2[i*3] += Math.sin(t * 0.4 + phs2[i]) * 0.06 * turbMult;
+                    pos2[i*3+2] += Math.cos(t * 0.2 + phs2[i]) * 0.06 * turbMult;
+                }
+                rot2[i*3] += delta * 0.3; // Slower rotation
+                rot2[i*3+2] += delta * 0.2;
+                
+                if (pos2[i*3+1] < -2) {
+                    pos2[i*3+1] = 40;
+                    pos2[i*3] = (Math.random() - 0.5) * 60;
+                    pos2[i*3+2] = (Math.random() - 0.5) * 60;
+                }
+                dummy.position.set(pos2[i*3], pos2[i*3+1], pos2[i*3+2]);
+                dummy.rotation.set(rot2[i*3], rot2[i*3+1], rot2[i*3+2]);
+                const s = sizeBase * 0.8 + Math.sin(phs2[i]) * (sizeBase * 0.2);
+                dummy.scale.setScalar(s); // Uniform scale for hexagons
+                dummy.updateMatrix();
+                meshRef2.current.setMatrixAt(i, dummy.matrix);
+            }
+            meshRef2.current.instanceMatrix.needsUpdate = true;
+        }
     });
 
     return (
-        <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
-            <octahedronGeometry args={[1, 0]} /> 
-            {diamondDust ? (
-                 <meshStandardMaterial 
-                    color="#e0f7fa" 
-                    roughness={0.1} 
-                    metalness={1.0} 
-                    emissive="#00ffff" 
-                    emissiveIntensity={0.2}
-                 />
-            ) : (
-                 <meshStandardMaterial 
-                    color="white" 
-                    roughness={0.1} 
-                    metalness={0.1} 
-                    emissive="white" 
-                    emissiveIntensity={0.2} 
-                 />
-            )}
-        </instancedMesh>
+        <group>
+            {/* Primary Snow (White Diamond Dust) */}
+            <instancedMesh ref={meshRef1} args={[undefined, undefined, count1]} frustumCulled={false}>
+                <octahedronGeometry args={[1, 0]} /> 
+                {diamondDust ? (
+                     <meshStandardMaterial 
+                        color="#e0f7fa" 
+                        roughness={0.1} 
+                        metalness={1.0} 
+                        emissive="#00ffff" 
+                        emissiveIntensity={0.2}
+                     />
+                ) : (
+                     <meshStandardMaterial 
+                        color="white" 
+                        roughness={0.1} 
+                        metalness={0.1} 
+                        emissive="white" 
+                        emissiveIntensity={0.2} 
+                     />
+                )}
+            </instancedMesh>
+
+            {/* Secondary Snow (Pale Blue Hexagons) */}
+            <instancedMesh ref={meshRef2} args={[undefined, undefined, count2]} frustumCulled={false}>
+                <circleGeometry args={[1, 6]} />
+                <meshStandardMaterial 
+                    color="#e0f2fe" // Very pale blue
+                    roughness={0.2} 
+                    metalness={0.5} 
+                    emissive="#a5f3fc" 
+                    emissiveIntensity={0.15} 
+                    transparent
+                    opacity={0.9}
+                    side={THREE.DoubleSide}
+                />
+            </instancedMesh>
+        </group>
     );
 });
 
