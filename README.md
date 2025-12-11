@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Chaos TreeD
 
-# Run and deploy your AI Studio app
+A 3D festive experience where you can decorate a Christmas tree with your own photo memories, fully interactive and rendered in real-time.
 
-This contains everything you need to run your app locally.
+## 🎄 Features
+- Drag and drop photo uploads for tree ornaments
+- Real-time Day/Night cycle
+- Dynamic weather effects (Snow, Fog, Diamond Dust)
+- Interactive 3D camera tour
+- Customizable greetings and decor
 
-View your app in AI Studio: https://ai.studio/apps/drive/1c102jj31yTIoEhrPfHgIxoMojfJlK64v
+## 🛠️ How to Install (Windows)
 
-## Run Locally
+1.  **Install Node.js**: Ensure you have Node.js installed on your computer.
+    *   Download it here: [https://nodejs.org/](https://nodejs.org/) (LTS version recommended).
+    *   *Note: If you just installed it, you might need to restart your computer.*
 
-**Prerequisites:**  Node.js
+2.  **Download the Code**: Download this folder to your computer.
 
+3.  **Run Installer**:
+    *   Double-click the `install.bat` file in this folder.
+    *   A black window will appear and download the necessary libraries (React, Three.js, etc.).
+    *   Once it says `[SUCCESS]`, press any key to close the window.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🚀 How to Run
+
+1.  Double-click `run.bat`.
+2.  The application should automatically open in your default web browser (usually at `http://localhost:3000`).
+3.  Enjoy decorating!
+
+## 📸 Controls
+- **Left Click + Drag**: Rotate camera
+- **Right Click + Drag**: Pan camera
+- **Scroll Wheel**: Zoom in/out
+- **UI Menu**: Use the buttons at the bottom and right to customize the scene.
